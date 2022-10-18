@@ -54,7 +54,7 @@ SCSFExport scsf_GoogleSheetsLevelsImporter(SCStudyInterfaceRef sc)
     // Set configuration variables
     if (sc.SetDefaults)
     {
-        sc.GraphName = "SG Historical Levels Importer";
+        sc.GraphName = "Historical Levels Importer";
         sc.GraphRegion = 0;
 
         i_FilePath.Name = "Google Sheets URL";
