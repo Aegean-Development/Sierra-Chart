@@ -8,7 +8,7 @@ SCDLLName("Historical Levels")
     Originally written by Frozen Tundra
 	Modified by Aegean for TYP Discord Group
 	 
-    This study allows you to enter price values into a google docs spreadsheet
+    This study allows you to enter historical price values into a google docs spreadsheet
     and automatically draw those levels onto your Sierra chart window.
 
     The format of the Google Spreadsheet is as follows:
@@ -19,6 +19,9 @@ SCDLLName("Historical Levels")
         (int)    Line Type
         (int)    Line Width
         (int)    Text Alignment
+	(int)	 Year
+	(int)	 Month
+	(int)	 Day
 */
 
 struct PriceLabel {
