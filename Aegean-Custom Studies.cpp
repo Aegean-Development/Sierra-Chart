@@ -96,6 +96,13 @@ SCSFExport scsf_GoogleSheetsLevelsImporter(SCStudyInterfaceRef sc)
     std::vector<char*> tokens;
     std::istringstream input(HttpResponseContent.GetChars());
     int LineNumber = 1;
+	
+    //We only want to process lines for days that are loaded in the chart
+    //SC has a variable to read the number of days loaded (sc.DaysToLoadInChart)
+    //If we read that value and subtract if from today's date, we get the minimum date
+    //Then we can check if the date of the line is > minimum date, otherwise ignore and do not draw
+    //https://www.sierrachart.com/index.php?page=doc/ACSIL_Members_Variables_And_Arrays.html#scDaysToLoadInChart
+	
     for (std::string line; getline(input,line);) {
         msg.Format("%s", line.c_str());
 
