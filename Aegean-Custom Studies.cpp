@@ -4,26 +4,6 @@
 #include <vector>
 SCDLLName("Historical Levels")
 
-/*
-    Originally written by Frozen Tundra
-	Modified by Aegean for TYP Discord Group
-	 
-    This study allows you to enter historical price values into a google docs spreadsheet
-    and automatically draw those levels onto your Sierra chart window.
-
-    The format of the Google Spreadsheet is as follows:
-        (float)  Price
-        (float)  Price 2 (For Rectangles only)
-        (string) Note
-        (string) Color
-        (int)    Line Type
-        (int)    Line Width
-        (int)    Text Alignment
-	(int)	 Year
-	(int)	 Month
-	(int)	 Day
-*/
-
 struct PriceLabel {
     float Price;
     SCString Label;
@@ -58,12 +38,6 @@ SCSFExport scsf_GoogleSheetsLevelsImporter(SCStudyInterfaceRef sc)
         sc.GraphRegion = 0;
 
         i_FilePath.Name = "Google Sheets URL";
-        // example template:
-        // https://docs.google.com/spreadsheets/d/1WkN119o3WY8HFWi6EM7ANJxqx8xuW2xSedC_busu0LE/gviz/tq?tqx=out:csv
-        // Google Docs Spreadsheet
-        // REQUIRED:
-        //    - you must set SHARING privs to "Anyone with link"
-        //    - you must strip off anything after the unique key, for example "/edit#usp=sharing" **needs** to be removed
         i_FilePath.SetString("https://docs.google.com/spreadsheets/d/1WkN119o3WY8HFWi6EM7ANJxqx8xuW2xSedC_busu0LE");
 
         i_Transparency.Name = "Transparency Level";
@@ -97,17 +71,12 @@ SCSFExport scsf_GoogleSheetsLevelsImporter(SCStudyInterfaceRef sc)
     }
 
 
-    // hold our HTTP Response
     SCString &HttpResponseContent = sc.GetPersistentSCString(4);
-
     SCString Url = i_FilePath.GetString();
-    // add specific code to output as CSV attachment from Google Sheets
     Url.Format("%s/gviz/tq?tqx=out:csv", Url.GetChars());
 
-    // create pointer to struct array
     std::vector<PriceLabel>* p_PriceLabels = reinterpret_cast<std::vector<PriceLabel>*>(sc.GetPersistentPointer(0));
     if (p_PriceLabels == NULL) {
-        // array of structs to hold our CSV labels for each price
         p_PriceLabels = new std::vector<PriceLabel>;
         sc.SetPersistentPointer(0, p_PriceLabels);
     }
@@ -115,25 +84,16 @@ SCSFExport scsf_GoogleSheetsLevelsImporter(SCStudyInterfaceRef sc)
         p_PriceLabels->clear();
     }
 
-    // HTTP request start
-    // status codes
     enum {REQUEST_NOT_SENT = 0,  REQUEST_SENT, REQUEST_RECEIVED};
     // latest request status
     int& RequestState = sc.GetPersistentInt(1);
 
-    // Only run on full recalc
     if (sc.Index == 0) {
         if (RequestState == REQUEST_NOT_SENT)
         {
-            // Make a request for a text file on the server. When the request is complete and all of the data
-            //has been downloaded, this study function will be called with the file placed into the sc.HTTPResponse character string array.
-
             if (!sc.MakeHTTPRequest(Url))
             {
                 sc.AddMessageToLog("Error making HTTP request.", 1);
-
-                // Indicate that the request was not sent. 
-                // Therefore, it can be made again when sc.Index equals 0.
                 RequestState = REQUEST_NOT_SENT;
             }
             else
@@ -145,32 +105,23 @@ SCSFExport scsf_GoogleSheetsLevelsImporter(SCStudyInterfaceRef sc)
     if (RequestState == REQUEST_SENT && sc.HTTPResponse != "")
     {
         RequestState = REQUEST_RECEIVED;
-        // Display the response from the Web server in the Message Log
-        //sc.AddMessageToLog(sc.HTTPResponse, 1);
         HttpResponseContent = sc.HTTPResponse;
     }
     else if (RequestState == REQUEST_SENT && sc.HTTPResponse == "")
     {
-        //The request has not completed, therefore there is nothing to do so we will return
         return;
     }
 
-    // reset state for next run
     RequestState = REQUEST_NOT_SENT;
 
-    // we'll split each CSV row up into tokens
     std::vector<char*> tokens;
-    // open an input stream and read from our Google Sheet
     std::istringstream input(HttpResponseContent.GetChars());
     int LineNumber = 1;
     for (std::string line; getline(input,line);) {
         msg.Format("%s", line.c_str());
-        //sc.AddMessageToLog(msg,1);
 
         SCString scline = line.c_str();
-        // skip the opening quotes and end quotes
         scline = scline.GetSubString(scline.GetLength() - 2, 1);
-        // anything between quotes and commas
         scline.Tokenize("\",\"", tokens);
 
         s_UseTool Tool;
