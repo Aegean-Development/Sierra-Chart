@@ -14,59 +14,39 @@ void DrawToChart(HWND WindowHandle, HDC DeviceContext, SCStudyInterfaceRef sc);
 
 SCSFExport scsf_GoogleSheetsLevelsImporter(SCStudyInterfaceRef sc)
 {
-    // logging object
     SCString msg;
-
     SCInputRef i_FilePath = sc.Input[0];
     SCInputRef i_Transparency = sc.Input[1];
-
-    // chart related settings
     SCInputRef i_DrawLinesOnChart = sc.Input[3];
     SCInputRef i_ShowPriceOnChart = sc.Input[4];
-
-    // (separate) DOM related settings
     SCInputRef i_ShowLabelOnDom = sc.Input[5];
     SCInputRef i_DomFontSize = sc.Input[6];
     SCInputRef i_xOffset = sc.Input[7];
     SCInputRef i_yOffset = sc.Input[8];
     SCInputRef i_LabelBgColor = sc.Input[9];
 
-    // Set configuration variables
     if (sc.SetDefaults)
     {
         sc.GraphName = "Historical Levels Importer";
         sc.GraphRegion = 0;
-
         i_FilePath.Name = "Google Sheets URL";
         i_FilePath.SetString("https://docs.google.com/spreadsheets/d/1WkN119o3WY8HFWi6EM7ANJxqx8xuW2xSedC_busu0LE");
-
         i_Transparency.Name = "Transparency Level";
         i_Transparency.SetInt(70);
-
-        // Chart specific settings
         i_DrawLinesOnChart.Name = "Draw Lines On Chart?";
         i_DrawLinesOnChart.SetYesNo(1);
-
         i_ShowPriceOnChart.Name = "> Show Price By Chart Label?";
         i_ShowPriceOnChart.SetYesNo(0);
-
-
-        // DOM specific settings
         i_ShowLabelOnDom.Name = "Show Label On DOM?";
         i_ShowLabelOnDom.SetYesNo(0);
-
         i_DomFontSize.Name = " > DOM Font Size";
         i_DomFontSize.SetInt(18);
-
         i_xOffset.Name = " > DOM Label X-coord Offset";
         i_xOffset.SetInt(-70);
-
         i_yOffset.Name = " > DOM Label Y-coord Offset";
         i_yOffset.SetInt(-10);
-
         i_LabelBgColor.Name = " > DOM Label Background Color";
         i_LabelBgColor.SetColor(255,255,255);
-
         return;
     }
 
@@ -123,7 +103,6 @@ SCSFExport scsf_GoogleSheetsLevelsImporter(SCStudyInterfaceRef sc)
         SCString scline = line.c_str();
         scline = scline.GetSubString(scline.GetLength() - 2, 1);
         scline.Tokenize("\",\"", tokens);
-
         s_UseTool Tool;
         Tool.LineStyle = LINESTYLE_SOLID;
         Tool.LineWidth = 1;
@@ -144,14 +123,9 @@ SCSFExport scsf_GoogleSheetsLevelsImporter(SCStudyInterfaceRef sc)
         int beginDrawDateIndex = -1; // set to -1 to be able to check whether the value has changed later on
         int endDrawDateIndex = -1;
         for (char* i : tokens) {
-            //msg.Format("%s", i);
-            //sc.AddMessageToLog(msg,1);
-
-            // price
             if (idx == 1) {
                 price = atof(i);
             }
-            // price 2 (only used for rectangles)
             else if (idx == 2) {
                 price2 = atof(i);
                 if (price2 == 0) {
@@ -165,11 +139,9 @@ SCSFExport scsf_GoogleSheetsLevelsImporter(SCStudyInterfaceRef sc)
                     Tool.EndValue = price2;
                 }
             }
-            // note label
             else if (idx == 3) {
                 note = i;
             }
-            // color
             else if (idx == 4) {
                 color = i;
                 if (color == "red") Tool.Color = COLOR_RED;
@@ -188,7 +160,6 @@ SCSFExport scsf_GoogleSheetsLevelsImporter(SCStudyInterfaceRef sc)
 
                 if (price2 > 0) Tool.SecondaryColor = Tool.Color;
             }
-            // line type
             else if (idx == 5) {
                 int LineType = atoi(i);
                 if (LineType == 0) Tool.LineStyle = LINESTYLE_SOLID;
@@ -197,30 +168,25 @@ SCSFExport scsf_GoogleSheetsLevelsImporter(SCStudyInterfaceRef sc)
                 else if (LineType == 3) Tool.LineStyle = LINESTYLE_DASHDOT;
                 else if (LineType == 4) Tool.LineStyle = LINESTYLE_DASHDOTDOT;
             }
-            // line width
             else if (idx == 6) {
                 linewidth = atoi(i);
                 if (linewidth > 0) Tool.LineWidth = linewidth;
             }
-            // text alignment
             else if (idx == 7) {
                 textalignment = atoi(i);
                 if (textalignment > 0) Tool.TextAlignment = textalignment;
             }
 
-            // Year
             else if (idx == 8)
             {
                 year = atoi(i);
             }
 
-            // Month
             else if (idx == 9)
             {
                 month = atoi(i);
             }
 
-            // Day
             else if (idx == 10)
             {
                 day = atoi(i);
