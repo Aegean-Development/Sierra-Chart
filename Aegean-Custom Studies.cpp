@@ -172,8 +172,6 @@ SCSFExport scsf_GoogleSheetsLevelsImporter(SCStudyInterfaceRef sc)
             // color
             else if (idx == 4) {
                 color = i;
-
-                // could use a switch here, but most will find this easier to read:
                 if (color == "red") Tool.Color = COLOR_RED;
                 else if (color == "green") Tool.Color = COLOR_GREEN;
                 else if (color == "blue") Tool.Color = COLOR_BLUE;
@@ -188,7 +186,6 @@ SCSFExport scsf_GoogleSheetsLevelsImporter(SCStudyInterfaceRef sc)
                 else if (color == "gray") Tool.Color = COLOR_GRAY;
                 else Tool.Color = COLOR_WHITE;
 
-                // if drawing a rectangle, make the fill color same as border
                 if (price2 > 0) Tool.SecondaryColor = Tool.Color;
             }
             // line type
@@ -240,7 +237,6 @@ SCSFExport scsf_GoogleSheetsLevelsImporter(SCStudyInterfaceRef sc)
                         && idxDay == day 
                         && beginDrawDateIndex == -1)
                     {
-                        // set beginDrawDateIndex at first matching date (assumes data is sorted)
                         beginDrawDateIndex = j;
                     }
                     
@@ -248,7 +244,6 @@ SCSFExport scsf_GoogleSheetsLevelsImporter(SCStudyInterfaceRef sc)
                         && idxMonth == month 
                         && idxDay == day)
                     {
-                        // continue setting the endDrawDateIndex until the dates stop matching (assumes data is sorted)
                         endDrawDateIndex = j;
                     }
                 }
@@ -280,23 +275,17 @@ SCSFExport scsf_GoogleSheetsLevelsImporter(SCStudyInterfaceRef sc)
                 sc.UseTool(Tool);
             }
 
-            // increment field counter
             idx++;
         }
 
-        // increment row counter
         LineNumber++;
 
-        // if we want to show on DOM, we need to add to our list
         if (i_ShowLabelOnDom.GetInt() == 1 && price > 0 && note != "") {
             PriceLabel TmpPriceLabel = { price, note, Tool.Color };
             if (price2 > 0) {
                 TmpPriceLabel.Label.Format("Rect1:%s", note.GetChars());
             }
-            //PriceLabels.insert(PriceLabels.end(), TmpPriceLabel);
             p_PriceLabels->insert(p_PriceLabels->end(), TmpPriceLabel);
-//msg.Format("Adding %f => %s", price, note.GetChars());
-//sc.AddMessageToLog(msg, 1);
 
             if (price2 > 0) {
                 TmpPriceLabel = { price2, note, Tool.Color };
@@ -313,19 +302,6 @@ void DrawToChart(HWND WindowHandle, HDC DeviceContext, SCStudyInterfaceRef sc)
 {
 
     SCString log;
-//    // keep track of last write time
-//    SCDateTime CurrTime = sc.CurrentSystemDateTime;
-//    int UpdateIntervalSeconds = 10;
-//    int &LastWrittenSec = sc.GetPersistentInt(5);
-//log.Format("LastWrittenSec=%d vs %d, return=%d", LastWrittenSec, CurrTime.GetTimeInSeconds(), (LastWrittenSec + UpdateIntervalSeconds > CurrTime.GetTimeInSeconds()));
-//sc.AddMessageToLog(log, 1);
-//    if (LastWrittenSec + UpdateIntervalSeconds > CurrTime.GetTimeInSeconds()) {
-//log.Format("Should be returning here...");
-//sc.AddMessageToLog(log, 1);
-//        return;
-//    }
-//    LastWrittenSec = CurrTime.GetTimeInSeconds();
-
     int xOffset = sc.Input[7].GetInt();
     int yOffset = sc.Input[8].GetInt();
     int x = sc.GetDOMColumnLeftCoordinate(n_ACSIL::DOM_COLUMN_GENERAL_PURPOSE_1);
@@ -336,55 +312,32 @@ void DrawToChart(HWND WindowHandle, HDC DeviceContext, SCStudyInterfaceRef sc)
 
     float plotPrice = 0;
 
-    // grab the name of the font used in this chartbook
     int fontSize = sc.Input[6].GetInt();
-    //int fontSize = 14;
     SCString chartFont = sc.ChartTextFont();
 
-    // Windows GDI font creation
-    // https://docs.microsoft.com/en-us/windows/win32/api/wingdi/nf-wingdi-createfonta
     HFONT hFont;
     hFont = CreateFont(fontSize,0,0,0,FW_BOLD,FALSE,FALSE,FALSE,DEFAULT_CHARSET,OUT_OUTLINE_PRECIS,
             CLIP_DEFAULT_PRECIS,CLEARTYPE_QUALITY, DEFAULT_PITCH,TEXT(chartFont));
 
-    // https://docs.microsoft.com/en-us/windows/win32/gdi/colorref
-    //const COLORREF bg = 0x00C0C0C0;
     const COLORREF fg = 0x00000000;
     COLORREF bg = sc.Input[9].GetColor();
-    // https://docs.microsoft.com/en-us/windows/win32/api/wingdi/nf-wingdi-settextcolor
     ::SetTextColor(DeviceContext, fg);
     ::SetBkColor(DeviceContext, bg);
-
-    // Windows GDI transparency 
-    // https://docs.microsoft.com/en-us/windows/win32/api/wingdi/nf-wingdi-setbkmode
-    //SetBkMode(DeviceContext, OPAQUE);
     SelectObject(DeviceContext, hFont);
 
-    // Windows GDI transparency 
-    // https://docs.microsoft.com/en-us/windows/win32/api/wingdi/nf-wingdi-setbkmode
-    //SetBkMode(DeviceContext, TRANSPARENT);
-    //int NumberOfDecimals = sc.Input[1].GetInt();
     int NumPriceLabels = p_PriceLabels->size();
-//log.Format("%d PriceLabels found", NumPriceLabels);
-//sc.AddMessageToLog(log,1);
     for (int i=0; i<NumPriceLabels; i++) {
 
-        // fetch the PriceLabel we want to draw
         PriceLabel TmpPriceLabel = p_PriceLabels->at(i);
         plotPrice = TmpPriceLabel.Price;
         msg = TmpPriceLabel.Label;
         COLORREF LabelColor = (COLORREF)TmpPriceLabel.LabelColor;
         ::SetTextColor(DeviceContext, LabelColor);
 
-        // calculate coords
         y = sc.RegionValueToYPixelCoordinate(plotPrice, sc.GraphRegion);
         y += yOffset;
         ::SetTextAlign(DeviceContext, TA_NOUPDATECP);
-//log.Format("[%d/%d] %d (%f) => %s", (i+1), NumPriceLabels, y, plotPrice, msg.GetChars());
-//sc.AddMessageToLog(log,1);
         ::TextOut(DeviceContext, x, y, msg, msg.GetLength());
-
-        // delete font
         DeleteObject(hFont);
     }
 
