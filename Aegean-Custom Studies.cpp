@@ -65,7 +65,6 @@ SCSFExport scsf_GoogleSheetsLevelsImporter(SCStudyInterfaceRef sc)
     }
 
     enum {REQUEST_NOT_SENT = 0,  REQUEST_SENT, REQUEST_RECEIVED};
-    // latest request status
     int& RequestState = sc.GetPersistentInt(1);
 
     if (sc.Index == 0) {
@@ -266,7 +265,6 @@ SCSFExport scsf_GoogleSheetsLevelsImporter(SCStudyInterfaceRef sc)
 
 void DrawToChart(HWND WindowHandle, HDC DeviceContext, SCStudyInterfaceRef sc)
 {
-
     SCString log;
     int xOffset = sc.Input[7].GetInt();
     int yOffset = sc.Input[8].GetInt();
