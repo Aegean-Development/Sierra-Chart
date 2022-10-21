@@ -103,6 +103,13 @@ SCSFExport scsf_GoogleSheetsLevelsImporter(SCStudyInterfaceRef sc)
     //Then we can check if the date of the line is > minimum date, otherwise ignore and do not draw
     //https://www.sierrachart.com/index.php?page=doc/ACSIL_Members_Variables_And_Arrays.html#scDaysToLoadInChart
 	
+    // get the number of days that are loaded into the chart
+    // get the date of the last data record in the array
+    // subtract days loaded from last data record date
+    // use new date as draw range
+    // this can be set via Chart >> Chart Settings >> Use Number of Days to Load >> Days to Load. (note: chart reload is required before changes are applied)
+    SCDateTime startDateDaysLoaded = sc.BaseDateTimeIn[sc.ArraySize - 1].AddDays(0 - sc.DaysToLoadInChart());
+	
     for (std::string line; getline(input,line);) {
         msg.Format("%s", line.c_str());
 
@@ -227,25 +234,19 @@ SCSFExport scsf_GoogleSheetsLevelsImporter(SCStudyInterfaceRef sc)
             }
 
             // draw line
-            if (i_DrawLinesOnChart.GetInt() == 1) {
-				Tool.ChartNumber = sc.ChartNumber;
-				if (beginDrawDateIndex == -1)
-				{
-					Tool.BeginDateTime = sc.BaseDateTimeIn[0];
-					Tool.EndDateTime = sc.BaseDateTimeIn[sc.ArraySize-1];
-				}
-				else
-				{
-					Tool.BeginDateTime = sc.BaseDateTimeIn[beginDrawDateIndex];
-					Tool.EndDateTime = sc.BaseDateTimeIn[endDrawDateIndex];
-				}
-                Tool.AddMethod = UTAM_ADD_OR_ADJUST;
-                Tool.ShowPrice = i_ShowPriceOnChart.GetInt();
-                Tool.TransparencyLevel = i_Transparency.GetInt();
-                Tool.Text = note;
-                Tool.LineNumber = LineNumber;
-                sc.UseTool(Tool);
-            }
+	    if (beginDrawDateIndex != -1) {
+	        if (i_DrawLinesOnChart.GetInt() == 1) {
+		    Tool.ChartNumber = sc.ChartNumber;
+		    Tool.BeginDateTime = sc.BaseDateTimeIn[beginDrawDateIndex];
+		    Tool.EndDateTime = sc.BaseDateTimeIn[endDrawDateIndex];
+		    Tool.AddMethod = UTAM_ADD_OR_ADJUST;
+		    Tool.ShowPrice = i_ShowPriceOnChart.GetInt();
+		    Tool.TransparencyLevel = i_Transparency.GetInt();
+		    Tool.Text = note;
+		    Tool.LineNumber = LineNumber;
+		    sc.UseTool(Tool);
+	   	}
+	    }
 
             idx++;
         }
