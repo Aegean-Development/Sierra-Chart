@@ -107,9 +107,11 @@ SCSFExport scsf_GoogleSheetsLevelsImporter(SCStudyInterfaceRef sc)
     // get the date of the last data record in the array
     // subtract days loaded from last data record date
     // use new date as draw range
-    // this can be set via Chart >> Chart Settings >> Use Number of Days to Load >> Days to Load. (note: chart reload is required before changes are applied)
+    // this can be set via Chart >> Chart Settings >> Use Number of Days to Load >> Days to Load. 
     // Note: the script uses SC 'Days to Load' from the CURRENT day, so it won't work with the SC 'Date Range' settings.
-	
+    // Note: you have to turn off 'include weekend data' on your chart, the study current does not handle that well.
+    // Note: the study currently has issues working together with other studies that also use external csv's/sheets to paint levels, so remove them 
+    //   from your chart if you have any.	
     SCDateTime startDateDaysLoaded = sc.BaseDateTimeIn[sc.ArraySize - 1].AddDays(0 - sc.DaysToLoadInChart());
 	
     for (std::string line; getline(input,line);) {
